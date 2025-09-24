@@ -55,6 +55,7 @@ export const useGame = () => {
     }, [])
 
     const handleOpponentProposed = useCallback((data: { number: number; by: string }) => {
+        console.log('handleOpponentProposed: ', data);
         setGameState((prev) => ({
             ...prev,
             pendingProposal: data,
@@ -85,13 +86,13 @@ export const useGame = () => {
     }, [gameState?.pendingProposal?.number, gameState?.pendingProposal?.by, gameState.pendingProposal])
 
     const handleProposalConfirmed = useCallback((data: any) => {
-        console.log('Proposal confirmed data:', data)
 
         setGameState((prev) => {
             if (!prev.room || !prev.currentPlayer) return prev
 
             const updatedPlayers = prev.room.players.map((player) => {
-                const updatedPlayer = data.players.find((p: { _id: string; id: string }) => p._id === player._id || p.id === player._id)
+
+                const updatedPlayer = data.players.find((p: { _id: string }) => p._id.toString() === player._id.toString())
                 if (updatedPlayer) {
                     return {
                         ...player,
@@ -102,7 +103,7 @@ export const useGame = () => {
             })
 
             const updatedCurrentPlayer = data.players.find(
-                (p: { _id: string }) => p._id === prev.currentPlayer?._id,
+                (p: { _id: string }) => p._id.toString() === prev.currentPlayer?._id?.toString(),
             )
 
             return {

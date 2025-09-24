@@ -9,7 +9,7 @@ import type { BoardType } from './types/game.types'
 function App() {
     const {
         gameState,
-        setGameState,
+        // setGameState,
         loading,
         isRestoring,
         error,
@@ -198,7 +198,7 @@ function App() {
         return (
             <GameScreen
                 gameState={gameState}
-                setGameState={setGameState}
+                // setGameState={setGameState}
                 onStrikeRow={handleStrikeRow}
                 onStrikeColumn={handleStrikeColumn}
                 onProposeNumber={handleProposeNumber}
@@ -206,7 +206,7 @@ function App() {
                 onCallBingo={handleCallBingo}
                 onPlayAgain={handlePlayAgain}
                 onExitGame={handleExitGame}
-                onRefreshState={handleRefreshGameState}
+                // onRefreshState={handleRefreshGameState}
                 loading={loading}
                 // onHideProposalModal={hideProposalModal}
                 // onShowProposalModal={showProposalModal}

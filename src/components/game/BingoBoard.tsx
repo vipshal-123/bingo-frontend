@@ -28,7 +28,6 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
     disabled = false,
 }) => {
     const { board, marked, strikes, bingoWord } = player
-    console.log('bingoWord: ', bingoWord)
     const boardType = player.boardType
     const bingoLetters: (keyof BingoWord)[] = ['B', 'I', 'N', 'G', 'O']
 
@@ -68,148 +67,148 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
 
     const getBingoLetterStyle = (letter: keyof BingoWord) => {
         const isStruck = bingoWord[letter]
+
         let baseStyle =
-            'w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center text-xs sm:text-sm md:text-base font-bold rounded-lg border-2 transition-all duration-300 select-none relative shadow-sm '
+            'absolute inset-0 flex items-center justify-center '
 
         if (isStruck) {
-            baseStyle += 'bg-gradient-to-br from-purple-500 to-purple-600 text-white border-purple-400 shadow-lg transform scale-110'
+            baseStyle += 'bg-white text-black border-2 border-white '
         } else {
-            baseStyle += 'bg-gradient-to-br from-slate-200 to-slate-300 text-slate-700 border-slate-400'
+            baseStyle += 'bg-primary-500 text-white '
         }
 
         return baseStyle
     }
 
     const getCellStyle = (number: number, rowIndex: number, colIndex: number) => {
-        const isMarked = marked?.[rowIndex]?.[colIndex]
+        const isMarked = marked && marked[rowIndex] && marked[rowIndex][colIndex]
         const isCalled = calledNumbers.includes(number)
         const isPendingProposalNumber = pendingProposal?.number === number
         const isOpponentProposal = pendingProposal && !isMyProposal
         const isMyPendingProposal = pendingProposal && isMyProposal
         const isRowStruck = strikes.rows[rowIndex]
         const isColumnStruck = strikes.columns[colIndex]
-        // const canStrike = completableRows.includes(rowIndex) || completableColumns.includes(colIndex)
 
-        const baseStyle =
-            'w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center text-xs sm:text-sm md:text-base font-bold rounded-lg border-2 transition-all duration-300 select-none relative overflow-hidden active:scale-95 '
+        let baseStyle =
+            'aspect-square flex items-center justify-center text-sm sm:text-base font-semibold rounded-lg border-2 transition-all duration-200 select-none relative '
 
         if (isRowStruck || isColumnStruck) {
-            return baseStyle + 'bg-gradient-to-br from-slate-600 to-slate-700 text-white/80 border-slate-500 shadow-inner cursor-not-allowed'
+            baseStyle += 'bg-red-500 text-white border-red-600 shadow-lg cursor-not-allowed '
+        } else if (isMarked) {
+            baseStyle += 'bg-green-500 text-white border-green-600 shadow-lg cursor-not-allowed '
+        } else if (isPendingProposalNumber && isOpponentProposal) {
+            baseStyle += 'bg-orange-400 text-white border-orange-500 shadow-lg animate-pulse cursor-pointer '
+        } else if (isPendingProposalNumber && isMyPendingProposal) {
+            baseStyle += 'bg-purple-400 text-white border-purple-500 shadow-lg animate-pulse cursor-not-allowed '
+        } else if (isCalled) {
+            baseStyle += 'bg-yellow-400 text-gray-800 border-yellow-500 shadow-md cursor-not-allowed '
+        } else if (isOpponentProposal) {
+            baseStyle += 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-50 '
+        } else if (isMyPendingProposal) {
+            baseStyle += 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-50 '
+        } else if (isMyTurn && !disabled) {
+            baseStyle += 'bg-white hover:bg-blue-50 text-gray-800 border-gray-300 hover:border-blue-400 hover:shadow-md cursor-pointer '
+        } else {
+            baseStyle += 'bg-gray-100 text-gray-600 border-gray-200 cursor-not-allowed '
         }
-        if (isMarked) {
-            return (
-                baseStyle +
-                'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-emerald-400 shadow-lg cursor-not-allowed transform scale-105'
-            )
-        }
-        if (isPendingProposalNumber && isOpponentProposal) {
-            return (
-                baseStyle +
-                'bg-gradient-to-br from-amber-400 to-amber-500 text-slate-900 border-amber-300 shadow-xl animate-bounce cursor-pointer ring-2 ring-amber-300'
-            )
-        }
-        if (isPendingProposalNumber && isMyPendingProposal) {
-            return (
-                baseStyle + 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white border-indigo-400 shadow-lg animate-pulse cursor-not-allowed'
-            )
-        }
-        if (isCalled) {
-            return baseStyle + 'bg-gradient-to-br from-yellow-300 to-yellow-400 text-slate-800 border-yellow-200 shadow-sm cursor-not-allowed'
-        }
-        if (isOpponentProposal || isMyPendingProposal) {
-            return baseStyle + 'bg-gradient-to-br from-slate-100 to-slate-200 text-slate-400 border-slate-300 cursor-not-allowed opacity-60'
-        }
-        if (isMyTurn && !disabled) {
-            return (
-                baseStyle +
-                'bg-gradient-to-br from-white to-blue-50 hover:from-sky-100 hover:to-sky-200 text-slate-700 border-slate-300 hover:border-sky-400 hover:shadow-lg cursor-pointer transform hover:scale-105 hover:-translate-y-0.5'
-            )
-        }
-        return baseStyle + 'bg-gradient-to-br from-slate-50 to-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
+
+        return baseStyle
     }
 
-    const getGridCols = () => (boardType === '5x5' ? 'grid-cols-5' : 'grid-cols-10')
+    const getGridCols = () => {
+        return boardType === '5x5' ? 'grid-cols-6' : 'grid-cols-11' // +1 for strike buttons
+    }
 
     if (!marked || !Array.isArray(marked) || !strikes || !bingoWord) {
-        return (
-            <div className='text-center p-6 sm:p-8 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl shadow-inner'>
-                <div className='animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2'></div>
-                <span className='text-sm text-slate-600'>Loading board...</span>
-            </div>
-        )
+        console.warn('Board data not properly initialized:', { marked, strikes, bingoWord })
+        return <div className='text-center p-4'>Loading board...</div>
     }
 
-    const StrikeIcon = ({ onClick, title, position }: { onClick: () => void; title: string; position: 'row' | 'col' }) => (
-        <button
-            onClick={onClick}
-            className={`absolute ${position === 'row' ? '-right-1 top-1/2 -translate-y-1/2' : 'top-0 left-1/2 -translate-x-1/2'} 
-                       w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-br from-rose-500 to-rose-600 text-white text-xs font-bold 
-                       rounded-full shadow-lg hover:from-rose-600 hover:to-rose-700 disabled:from-rose-300 disabled:to-rose-400 
-                       disabled:cursor-not-allowed transition-all transform hover:scale-110 active:scale-95 z-10`}
-            title={title}
-            aria-label={title}
-            disabled={disabled}
-        >
-            ✗
-        </button>
-    )
-
     return (
-        <div className='space-y-3 sm:space-y-4'>
-            {boardType === '5x5' && (
-                <div className='grid grid-cols-5 gap-1 sm:gap-2 px-3'>
-                    {bingoLetters.map((letter, index) => (
-                        <div key={`header-${letter}`} className='relative'>
-                            {completableColumns.includes(index) && (
-                                <StrikeIcon onClick={() => onStrikeColumn(index)} title={`Strike column ${letter}`} position='col' />
-                            )}
-                            <div className={getBingoLetterStyle(letter)}>
-                                {letter}
-                                {bingoWord[letter] && (
-                                    <div className='absolute inset-0 flex items-center justify-center'>
-                                        <div className='h-0.5 bg-white/90 transform -rotate-45 rounded-full' />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+        <div className='w-full max-w-4xl mx-auto'>
+            <div className={`grid ${getGridCols()} gap-1 sm:gap-2 mb-2`}>
+                <div></div>
 
-            <div
-                className={`grid ${getGridCols()} gap-1 sm:gap-2 p-2 sm:p-3 bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-white/20`}
-            >
+                {boardType === '5x5'
+                    ? bingoLetters.map((letter, index) => (
+                          <div key={letter} className='aspect-square flex items-center justify-center text-sm sm:text-base font-semibold rounded-lg border-2 transition-all duration-200 select-none relative text-white shadow-lg '>
+                              {completableColumns.includes(index) && (
+                                  <button
+                                      onClick={() => onStrikeColumn(index)}
+                                      className='w-6 h-6 bg-red-500 text-white text-xs font-bold rounded hover:bg-red-600 transition-colors'
+                                      title={`Strike column ${letter} (auto-strikes next BINGO letter)`}
+                                      disabled={disabled}
+                                  >
+                                      ✗
+                                  </button>
+                              )}
+
+                              <div className={getBingoLetterStyle(letter)}>
+                                  {letter}
+                                  {bingoWord[letter] && (
+                                      <div className='absolute inset-0 flex items-center justify-center'>
+                                          <div className='w-full h-0.5 bg-black opacity-80 transform rotate-45'></div>
+                                          {/* <div className='w-full h-0.5 bg-white opacity-80 transform -rotate-45 absolute'></div> */}
+                                      </div>
+                                  )}
+                              </div>
+                          </div>
+                      ))
+                    : Array.from({ length: 10 }).map((_, index) => (
+                          <div key={index} className='flex flex-col items-center gap-1'>
+                              {completableColumns.includes(index) && (
+                                  <button
+                                      onClick={() => onStrikeColumn(index)}
+                                      className='w-6 h-6 bg-red-500 text-white text-xs font-bold rounded hover:bg-red-600 transition-colors'
+                                      title={`Strike column ${index + 1} (auto-strikes next BINGO letter)`}
+                                      disabled={disabled}
+                                  >
+                                      ✗
+                                  </button>
+                              )}
+
+                              <div className='aspect-square flex items-center justify-center bg-gray-300 text-gray-600 font-bold text-sm sm:text-lg rounded-lg shadow-lg'>
+                                  {index + 1}
+                              </div>
+                          </div>
+                      ))}
+            </div>
+
+            <div className={`grid ${getGridCols()} gap-1 sm:gap-2`}>
                 {board.map((row, rowIndex) => (
                     <React.Fragment key={`row-${rowIndex}`}>
-                        {row.map((number, colIndex) => (
-                            <div key={`${rowIndex}-${colIndex}`} className='relative'>
-                                {/* Row strike button */}
-                                {colIndex === 0 && completableRows.includes(rowIndex) && (
-                                    <StrikeIcon onClick={() => onStrikeRow(rowIndex)} title={`Strike row ${rowIndex + 1}`} position='row' />
-                                )}
-
-                                {boardType !== '5x5' && rowIndex === 0 && completableColumns.includes(colIndex) && (
-                                    <StrikeIcon onClick={() => onStrikeColumn(colIndex)} title={`Strike column ${colIndex + 1}`} position='col' />
-                                )}
-
-                                <div
-                                    className={getCellStyle(number, rowIndex, colIndex)}
-                                    onClick={() => handleCellClick(number, rowIndex, colIndex)}
-                                    title={marked?.[rowIndex]?.[colIndex] ? `Number ${number} (Marked)` : `Number ${number}`}
+                        <div className='flex items-center justify-center'>
+                            {completableRows.includes(rowIndex) && (
+                                <button
+                                    onClick={() => onStrikeRow(rowIndex)}
+                                    className='w-6 h-6 bg-red-500 text-white text-xs font-bold rounded hover:bg-red-600 transition-colors'
+                                    title={`Strike row ${rowIndex + 1} (auto-strikes next BINGO letter)`}
+                                    disabled={disabled}
                                 >
-                                    {number}
-                                    {(strikes.rows[rowIndex] || strikes.columns[colIndex]) && (
-                                        <div className='absolute inset-0 flex items-center justify-center'>
-                                            <div
-                                                className='bg-white/90 rounded-full shadow-sm'
-                                                style={{
-                                                    width: strikes.rows[rowIndex] ? '90%' : '2px',
-                                                    height: strikes.rows[rowIndex] ? '2px' : '90%',
-                                                }}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
+                                    ✗
+                                </button>
+                            )}
+                        </div>
+
+                        {row.map((number, colIndex) => (
+                            <div
+                                key={`${rowIndex}-${colIndex}`}
+                                className={getCellStyle(number, rowIndex, colIndex)}
+                                onClick={() => handleCellClick(number, rowIndex, colIndex)}
+                                title={
+                                    strikes.rows[rowIndex] || strikes.columns[colIndex]
+                                        ? 'Struck - cannot be used'
+                                        : marked && marked[rowIndex] && marked[rowIndex][colIndex]
+                                        ? 'Already marked - cannot propose'
+                                        : `Number ${number}`
+                                }
+                            >
+                                {number}
+                                {(strikes.rows[rowIndex] || strikes.columns[colIndex]) && (
+                                    <div className='absolute inset-0 flex items-center justify-center'>
+                                        <div className={`${strikes.rows[rowIndex] ? 'w-full h-0.5' : 'w-0.5 h-full'} bg-white opacity-80`}></div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </React.Fragment>
@@ -217,17 +216,41 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
             </div>
 
             {(completableRows.length > 0 || completableColumns.length > 0) && (
-                <div className='p-3 sm:p-4 bg-gradient-to-r from-yellow-100 to-amber-100 border-2 border-dashed border-yellow-300 rounded-xl text-center shadow-sm'>
-                    <div className='flex items-center justify-center gap-2'>
-                        <span className='text-lg animate-bounce'>⚡</span>
-                        <p className='text-yellow-800 font-medium text-xs sm:text-sm'>
-                            Line completed! Tap the{' '}
-                            <span className='inline-flex items-center justify-center w-4 h-4 bg-rose-500 text-white text-xs rounded-full'>✗</span>{' '}
-                            button to strike it.
-                        </p>
-                    </div>
+                <div className='mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg'>
+                    <p className='text-yellow-800 font-medium text-center'>
+                        ⚡ You can strike: {completableRows.length} row(s) and {completableColumns.length} column(s)
+                    </p>
+                    <p className='text-yellow-600 text-sm text-center mt-1'>Each strike automatically marks the next BINGO letter!</p>
                 </div>
             )}
+
+            {/* <div className='mt-4 flex flex-wrap gap-2 text-xs sm:text-sm'>
+                <div className='flex items-center'>
+                    <div className='w-4 h-4 bg-green-500 rounded mr-2'></div>
+                    <span>Marked</span>
+                </div>
+                <div className='flex items-center'>
+                    <div className='w-4 h-4 bg-red-500 rounded mr-2'></div>
+                    <span>Struck (BINGO Letter Auto-Marked)</span>
+                </div>
+                <div className='flex items-center'>
+                    <div className='w-4 h-4 bg-orange-400 rounded mr-2'></div>
+                    <span>Opponent's Proposal</span>
+                </div>
+                <div className='flex items-center'>
+                    <div className='w-4 h-4 bg-purple-400 rounded mr-2'></div>
+                    <span>Your Proposal</span>
+                </div>
+                <div className='flex items-center'>
+                    <div className='w-4 h-4 bg-yellow-400 rounded mr-2'></div>
+                    <span>Called</span>
+                </div>
+                <div className='flex items-center'>
+                    <div className='w-4 h-4 bg-white border border-gray-300 rounded mr-2'></div>
+                    <span>Available</span>
+                </div>
+            </div> */}
+
         </div>
     )
 }
