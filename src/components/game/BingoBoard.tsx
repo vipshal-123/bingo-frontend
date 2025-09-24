@@ -215,6 +215,27 @@ const BingoBoard: React.FC<BingoBoardProps> = ({
                 ))}
             </div>
 
+            <div className={`grid ${getGridCols()} gap-1 sm:gap-2 mt-2`}>
+            <div></div> {/* empty for row strike button alignment */}
+            {board[0].map((_, colIndex) => (
+                <div
+                key={`strike-col-${colIndex}`}
+                className="flex items-center justify-center"
+                >
+                {completableColumns.includes(colIndex) && (
+                    <button
+                    onClick={() => onStrikeColumn(colIndex)}
+                    className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded hover:bg-red-600 transition-colors"
+                    title={`Strike column ${colIndex + 1} (auto-strikes next BINGO letter)`}
+                    disabled={disabled}
+                    >
+                    ✗
+                    </button>
+                )}
+                </div>
+            ))}
+            </div>
+
             {(completableRows.length > 0 || completableColumns.length > 0) && (
                 <div className='mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg'>
                     <p className='text-yellow-800 font-medium text-center'>
